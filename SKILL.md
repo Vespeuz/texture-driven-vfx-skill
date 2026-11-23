@@ -117,4 +117,4 @@ Change the smallest component responsible for visual defects. Do not rebuild wor
 - `references/TEXTURE_WORKFLOW.md`: procedural / AI image workflows and atlas layout
 - `examples/`: editable specifications and JSON Schema
 - `scripts/`: analyze GLB, inspect video, generate textures, generate GLB, batch draws, validate GLB
-- `output/`: tested sample animated GLBs and atlas
+- `output/`: reference metrics and regeneration instructions; generated demo binaries remain local

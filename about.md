@@ -30,7 +30,7 @@ Rising shockwaves, magic spells, explosions, healing pulses, sword slashes, port
 - `SKILL.md` — portable agent workflow and build instructions
 - `scripts/` — video inspection, GLB inspection, atlas generation, animated GLB building, draw-call batching, and validation
 - `examples/` — effect specifications and a JSON Schema
-- `output/` — small demonstration GLBs, an atlas, and validation reports
+- `output/` — demonstration metrics and instructions to generate GLBs and texture atlases
 - `references/` — measured reference comparisons and texture-workflow guidance
 - `tests/` — regression tests for the included pipeline
 

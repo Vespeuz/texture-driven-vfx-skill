@@ -1,5 +1,7 @@
 # Texture-Driven VFX Skill v1.1
 
+[About this project](about.md) · [Agent skill instructions](SKILL.md)
+
 A reusable, agent-independent VFX production skill that turns visual references into **lightweight, texture-driven, animated GLB** assets. Inspired by the technical construction of low-poly sprite effects, not by copying reference artwork.
 
 The folder contains:
@@ -7,7 +9,7 @@ The folder contains:
 - `SKILL.md` — instructions for AI agents and artists
 - `scripts/` — functional portable GLB analysis, original texture generation, animation construction and QA tools
 - `examples/` — rising shockwave, healing pulse and slash arc specification files
-- `output/` — generated example GLBs and procedural atlas (tested)
+- `output/` — metrics and reproduction instructions; demo GLBs are generated locally
 - `references/` — measured comparison and practical transparency/portability notes
 
 ## Install
@@ -73,7 +75,7 @@ The example becomes **one drawable mesh primitive** while retaining its original
 
 ## Demo performance and structure
 
-The included **rising shockwave** example has **24 triangles**, **7 meshes**, **1 material**, **1 embedded 512px texture**, **11 TRS animation channels**, **0 joints** and weighs about **135 KiB**. The packaged healing and slash examples are also playable GLB animation assets. These are *structurally validated*, not benchmarked/render-tested in your particular game engine.
+The reproducible **rising shockwave** example has **24 triangles**, **7 meshes**, **1 material**, **1 embedded 512px texture**, **11 TRS animation channels**, **0 joints** and weighs about **135 KiB**. The healing and slash examples can likewise be generated from their specifications. These are *structurally validated*, not benchmarked/render-tested in your particular game engine.
 
 ## Grounding and limitations
 

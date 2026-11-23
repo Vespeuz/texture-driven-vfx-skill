@@ -1,0 +1,20 @@
+{
+  "megumin": {
+    "triangles": 142,
+    "meshes": 9,
+    "nodes": 22,
+    "skins": 0,
+    "animation_channels": 24,
+    "embedded_images": 12,
+    "bytes": 5379268
+  },
+  "vertical_beam": {
+    "triangles": 31462,
+    "meshes": 8,
+    "nodes": 159,
+    "skins": 1,
+    "joints": 149,
+    "animation_channels": 448,
+    "bytes": 7344432
+  }
+}

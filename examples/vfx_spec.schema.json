@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Texture-Driven VFX Skill — Portable GLB Effect Specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "duration_seconds",
+    "texture",
+    "layers"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "duration_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 60
+    },
+    "animation_name": {
+      "type": "string"
+    },
+    "texture": {
+      "type": "object",
+      "properties": {
+        "resolution": {
+          "type": "integer",
+          "minimum": 256,
+          "multipleOf": 4
+        },
+        "accent": {
+          "$ref": "#/$defs/color"
+        },
+        "core": {
+          "$ref": "#/$defs/color"
+        },
+        "tiles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 120,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "texture",
+          "frames"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "texture": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orientation": {
+            "enum": [
+              "vertical",
+              "horizontal"
+            ]
+          },
+          "width": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "height": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "planes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 8
+          },
+          "center": {
+            "$ref": "#/$defs/vec3"
+          },
+          "frames": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": [
+                "t"
+              ],
+              "properties": {
+                "t": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "offset": {
+                  "$ref": "#/$defs/vec3"
+                },
+                "scale": {
+                  "$ref": "#/$defs/vec3"
+                },
+                "rotation_deg": {
+                  "$ref": "#/$defs/vec3"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$"
+    },
+    "vec3": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number"
+      }
+    }
+  }
+}

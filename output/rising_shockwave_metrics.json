@@ -1,0 +1,24 @@
+{
+  "bytes": 138176,
+  "triangles": 24,
+  "meshes": 7,
+  "nodes": 7,
+  "skins": 0,
+  "joints": 0,
+  "materials": 1,
+  "textures": 1,
+  "images": 1,
+  "animations": 1,
+  "animation_channels": 11,
+  "animated_paths": {
+    "scale": 7,
+    "translation": 3,
+    "rotation": 1
+  },
+  "extensionsUsed": [
+    "KHR_materials_unlit"
+  ],
+  "alphaModes": {
+    "BLEND": 1
+  }
+}
