@@ -1,6 +1,6 @@
 # About Texture-Driven VFX
 
-**Texture-Driven VFX** is an open, agent-independent workflow for building lightweight, animated 3D visual effects from reference images, videos, and existing GLB assets.
+**Texture-Driven VFX v2.0** is an open, agent-independent workflow for building lightweight, animated 3D visual effects from reference images, videos, and existing GLB assets.
 
 Its goal is to **make an effect visually rich without making its geometry unnecessarily complex**. Rather than sculpting every flame, shockwave, or energy filament from polygons, the workflow uses original transparent RGBA artwork on simple, purpose-built meshes, animated using features available in glTF 2.0.
 
@@ -12,8 +12,8 @@ Rising shockwaves, magic spells, explosions, healing pulses, sword slashes, port
 
 1. **Analyze the reference.** Break the effect into startup, peak, sustain, and fade, and identify its most important shapes and movements.
 2. **Design texture layers.** Create original alpha sprites procedurally or supply AI-assisted / artist-made transparent PNGs. Pack them into an atlas.
-3. **Build minimal geometry.** Place sprites on small numbers of quads or intersecting planes. Add complexity only when it improves the result.
-4. **Animate for portable GLB.** Export embedded textures, standard materials, and node translation/rotation/scale (TRS) animation.
+3. **Build minimal geometry.** Place sprites on purpose-built planes, crossed cards, cylinders, rings, cones, or ribbons. Add complexity only when it improves the result.
+4. **Animate for portable GLB.** Export embedded textures, standard materials, and node translation/rotation/scale (TRS), native morph animation, and STEP-gated baked flipbooks.
 5. **Validate and optimize.** Check triangles, materials, embedded images, animation channels, file size, and estimated draw submissions. Optionally batch compatible animated sprites using standard glTF skinning.
 
 ## Design principles
@@ -30,7 +30,7 @@ Rising shockwaves, magic spells, explosions, healing pulses, sword slashes, port
 - `SKILL.md` — portable agent workflow and build instructions
 - `scripts/` — video inspection, GLB inspection, atlas generation, animated GLB building, draw-call batching, and validation
 - `examples/` — effect specifications and a JSON Schema
-- `output/` — demonstration metrics and instructions to generate GLBs and texture atlases
+- `output/` — small demonstration GLBs, an atlas, and validation reports
 - `references/` — measured reference comparisons and texture-workflow guidance
 - `tests/` — regression tests for the included pipeline
 
@@ -45,3 +45,7 @@ Texture-driven recreation is **not an automatic 1:1 converter**: a single-camera
 See [README.md](README.md) for setup and commands, or [SKILL.md](SKILL.md) for the complete agent workflow.
 
 **Guiding idea: make it look expensive, but render cheaply.**
+
+## What changed in v2.0
+
+Full-cadence flipbooks, optional authorized video alpha extraction, baked texture motion, custom low-poly UV meshes, native morph animation, texture resizing and temporal validation. Preserve visual fidelity before optimizing; do not reduce animation cadence to meet a triangle budget. See [V2 techniques](references/V2_TECHNIQUES.md).

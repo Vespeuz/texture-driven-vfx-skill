@@ -15,6 +15,8 @@ import numpy as np
 from PIL import Image
 from atlas import make_atlas, TILES, GRID
 from glb_utils import encode_glb, summarize, read_glb
+from mesh_shapes import surface, atlas_uv
+
 
 class BinaryBuilder:
     def __init__(self):
@@ -47,13 +49,16 @@ class BinaryBuilder:
         self.accessors.append(obj)
         return len(self.accessors)-1
 
+
 def _quat_xyz(deg):
     rx,ry,rz=(math.radians(float(d))/2 for d in deg)
     x,y,z=math.sin(rx),math.sin(ry),math.sin(rz)
     w,v,u=math.cos(rx),math.cos(ry),math.cos(rz)
+    # Euler XYZ using q = qz * qy * qx.
     q=[x*v*u-w*y*z, w*y*u+x*v*z, w*v*z-x*y*u, w*v*u+x*y*z]
     d=math.sqrt(sum(f*f for f in q))
     return [f/d for f in q]
+
 
 def _quad_vertices(orientation, width, height, planes, uv_rect, atlas_resolution):
     if orientation not in ('vertical','horizontal'):
@@ -66,6 +71,7 @@ def _quad_vertices(orientation, width, height, planes, uv_rect, atlas_resolution
     pad=1.5/atlas_resolution
     u0+=pad;v0+=pad;u1-=pad;v1-=pad
     xyz=[];uv=[];indices=[]
+    # All quads share the material and atlas; cross-planes have different yaw.
     for p in range(planes):
         yaw=math.pi*p/planes
         c,s=math.cos(yaw),math.sin(yaw)
@@ -79,10 +85,12 @@ def _quad_vertices(orientation, width, height, planes, uv_rect, atlas_resolution
         indices.extend([base,base+1,base+2,base,base+2,base+3])
     return xyz,uv,indices
 
+
 def _v3(v,label):
     if not isinstance(v,list) or len(v)!=3:
         raise ValueError(f'{label} must be a three-element array')
     return [float(x) for x in v]
+
 
 def _frames(layer, duration):
     frames=layer.get('frames',[])
@@ -103,6 +111,7 @@ def _frames(layer, duration):
         rotation.append(_quat_xyz(_v3(f.get('rotation_deg',[0,0,0]),'rotation_deg')))
     return times,position,scales,rotation
 
+
 def create(spec, atlas_image):
     duration=float(spec.get('duration_seconds',2))
     if duration<=0 or duration>60:
@@ -118,7 +127,7 @@ def create(spec, atlas_image):
     png=buf.getvalue()
     img_view=builder.add_view(png)
     gltf={
-        'asset':{'version':'2.0','generator':'Texture-Driven VFX Skill v1.0'},
+        'asset':{'version':'2.0','generator':'Texture-Driven VFX Skill v2.0'},
         'extensionsUsed':['KHR_materials_unlit'],
         'scene':0,'scenes':[{'nodes':[]}],
         'nodes':[],'meshes':[],'bufferViews':[], 'buffers':[], 'accessors':[],
@@ -128,7 +137,7 @@ def create(spec, atlas_image):
         'materials':[{'name':'Transparent_Unlit_Atlas',
                       'pbrMetallicRoughness':{'baseColorTexture':{'index':0},'metallicFactor':0,'roughnessFactor':1},
                       'alphaMode':'BLEND','doubleSided':True,'extensions':{'KHR_materials_unlit':{}}}],
-        'animations':[{'name':spec.get('animation_name','VFX_OneShot'), 'samplers':[], 'channels':[]}]
+        'animations':[{'name':spec.get('animation_name','Animation'), 'samplers':[], 'channels':[]}]
     }
     tile_names=spec.get('texture',{}).get('tiles',TILES)
     if not isinstance(tile_names,list) or not 1<=len(tile_names)<=16 or len(set(tile_names))!=len(tile_names):
@@ -148,6 +157,10 @@ def create(spec, atlas_image):
         xyz,uv,inds=_quad_vertices(orientation,float(layer.get('width',1)),
                                   float(layer.get('height',1)),int(layer.get('planes',1)),
                                   rect,atlas_image.width)
+        if layer.get('shape'):
+            xyz,local_uv,inds=surface(layer['shape'],float(layer.get('width',1)),float(layer.get('height',1)),int(layer.get('segments',8)),int(layer.get('planes',2)),float(layer.get('inner',.75)),float(layer.get('turns',1)),float(layer.get('anchor',.5)),orientation)
+            pad=1.5/atlas_image.width
+            uv=atlas_uv(local_uv,(rect[0]+pad,rect[1]+pad,rect[2]-pad,rect[3]-pad))
         position_accessor=builder.add_accessor(xyz,'VEC3',target=34962,bounds=True)
         uv_accessor=builder.add_accessor(uv,'VEC2',target=34962)
         indices_accessor=builder.add_accessor(inds,'SCALAR',5123,target=34963)
@@ -162,6 +175,16 @@ def create(spec, atlas_image):
         gltf['scenes'][0]['nodes'].append(node_index)
         tacc=builder.add_accessor([[t] for t in times],'SCALAR',bounds=True)
         anim=gltf['animations'][0]
+        # Optional single native morph target: bend along height by a specified displacement.
+        if 'morph_bend' in layer:
+            base=np.asarray(xyz,dtype=np.float32); extent=np.ptp(base[:,1]); fraction=(base[:,1]-base[:,1].min())/max(float(extent),1e-6)
+            delta=np.zeros_like(base); delta[:,0]=float(layer['morph_bend'])*fraction**2
+            ma=builder.add_accessor(delta,'VEC3',target=34962,bounds=True)
+            gltf['meshes'][-1]['primitives'][0]['targets']=[{'POSITION':ma}];gltf['meshes'][-1]['weights']=[0.]
+            weights=[float(f.get('morph_weight',0)) for f in layer['frames']]
+            if any(not 0<=w<=1 for w in weights):raise ValueError('Morph weights must be in [0,1]')
+            gltf['nodes'][-1]['weights']=[weights[0]]
+            wa=builder.add_accessor(weights,'SCALAR'); si=len(anim['samplers']);anim['samplers'].append({'input':tacc,'output':wa,'interpolation':'LINEAR'});anim['channels'].append({'sampler':si,'target':{'node':node_index,'path':'weights'}})
         for path, vals, typ in [('translation',positions,'VEC3'),('scale',scales,'VEC3'),('rotation',rotations,'VEC4')]:
             if all(np.allclose(vals[0],v,rtol=0,atol=1e-6) for v in vals[1:]):
                 continue
@@ -175,6 +198,7 @@ def create(spec, atlas_image):
     gltf['accessors']=builder.accessors
     gltf['buffers']=[{'byteLength':len(builder.blob)}]
     return encode_glb(gltf,bytes(builder.blob))
+
 
 def main():
     p=argparse.ArgumentParser(description='Build a self-contained, rig-free animated texture-VFX GLB')
@@ -209,6 +233,7 @@ def main():
     if args.report:
         Path(args.report).write_text(json.dumps(metrics,indent=2)+'\n')
     print(f'Created {out} | {metrics["triangles"]} triangles | {metrics["animation_channels"]} animation channels | {metrics["bytes"]:,} bytes')
+
 
 if __name__=='__main__':
     main()

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Texture-Driven VFX Skill — Portable GLB Effect Specification",
+  "title": "Texture-Driven VFX Skill \u2014 Portable GLB Effect Specification",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -112,10 +112,44 @@
                 },
                 "rotation_deg": {
                   "$ref": "#/$defs/vec3"
+                },
+                "morph_weight": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
                 }
               },
               "additionalProperties": false
             }
+          },
+          "shape": {
+            "enum": [
+              "plane",
+              "cross",
+              "cylinder",
+              "cone",
+              "ring",
+              "ribbon"
+            ]
+          },
+          "segments": {
+            "type": "integer",
+            "minimum": 3,
+            "maximum": 128
+          },
+          "inner": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "exclusiveMaximum": 1
+          },
+          "turns": {
+            "type": "number"
+          },
+          "anchor": {
+            "type": "number"
+          },
+          "morph_bend": {
+            "type": "number"
           }
         },
         "additionalProperties": false

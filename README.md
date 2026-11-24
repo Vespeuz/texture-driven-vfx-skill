@@ -1,4 +1,4 @@
-# Texture-Driven VFX Skill v1.1
+# Texture-Driven VFX Skill v2.0
 
 [About this project](about.md) · [Agent skill instructions](SKILL.md)
 
@@ -9,7 +9,7 @@ The folder contains:
 - `SKILL.md` — instructions for AI agents and artists
 - `scripts/` — functional portable GLB analysis, original texture generation, animation construction and QA tools
 - `examples/` — rising shockwave, healing pulse and slash arc specification files
-- `output/` — metrics and reproduction instructions; demo GLBs are generated locally
+- `output/` — generated example GLBs and procedural atlas (tested)
 - `references/` — measured comparison and practical transparency/portability notes
 
 ## Install
@@ -22,7 +22,7 @@ For manual or CI use, Python 3.10+ and these packages are sufficient:
 python -m pip install -r requirements.txt
 ```
 
-FFmpeg and FFprobe are optional, only for extracting storyboards from video files.
+FFmpeg and FFprobe are optional, for storyboards and authorized video-derived flipbooks.
 
 ## Quick start
 
@@ -75,7 +75,7 @@ The example becomes **one drawable mesh primitive** while retaining its original
 
 ## Demo performance and structure
 
-The reproducible **rising shockwave** example has **24 triangles**, **7 meshes**, **1 material**, **1 embedded 512px texture**, **11 TRS animation channels**, **0 joints** and weighs about **135 KiB**. The healing and slash examples can likewise be generated from their specifications. These are *structurally validated*, not benchmarked/render-tested in your particular game engine.
+The included **rising shockwave** example has **24 triangles**, **7 meshes**, **1 material**, **1 embedded 512px texture**, **11 TRS animation channels**, **0 joints** and weighs about **135 KiB**. The packaged healing and slash examples are also playable GLB animation assets. These are *structurally validated*, not benchmarked/render-tested in your particular game engine.
 
 ## Grounding and limitations
 
@@ -87,4 +87,18 @@ The reproducible **rising shockwave** example has **24 triangles**, **7 meshes**
 
 ## Typical agent instruction
 
-> Use the texture-driven-vfx skill to analyze this reference, decompose it into layers, generate original transparent textures, animate cheap planes, output a portable self-contained GLB with a JSON spec and validate it. Prefer under 200 triangles and avoid rigs; explain any runtime-specific visual differences.
+> Use the texture-driven-vfx skill to analyze this reference, decompose it into layers, generate original transparent textures, animate purpose-built low-poly meshes, output a portable self-contained GLB with a JSON spec and validate it. Select an appropriate geometry budget and preserve frame cadence; explain any runtime-specific visual differences.
+
+
+## v2.0: full-rate flipbooks and custom geometry
+
+The original static-sprite workflow is unchanged. New utilities support alpha extraction from a matching background plate, procedural baking, padded atlas packing, STEP-gated GLB flipbooks, low-poly meshes, native morphs, texture resizing and temporal validation. See [V2 techniques](references/V2_TECHNIQUES.md) and [SKILL.md](SKILL.md).
+
+```bash
+python scripts/flipbook.py images rgba_frames --out packed --fps 30
+python scripts/build_flipbook.py packed/manifest.json --shape cylinder --segments 8 --height 48 --out effect.glb --batch
+python scripts/check_flipbook.py effect.glb
+python scripts/validate_glb.py effect.glb --max-tris 1500 --max-texture 512 --max-draws 9
+```
+
+Default new clip name: `Animation`. Never silently drop frames to meet a geometry target. The flipbook builder handles single sequences and synchronized layered atlases, including an optional ground circle. Independently timed sequences may still need DCC assembly. Rigid-skin playback, visual quality, and actual draw calls must be tested in the destination engine.
