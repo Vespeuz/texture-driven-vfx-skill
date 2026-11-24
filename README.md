@@ -70,10 +70,10 @@ For an agent that supports Agent Skills, copy the complete repository folder int
 ## Showcase
 
 <p align="center">
-  <img src="assets/magic-spell-vfx.png" alt="User-supplied viewport still of the blue magic spell and ground circle" width="698">
+  <img src="assets/magic-spell-vfx.png" alt="Blue cylindrical magic beam with a cyan magic circle, shown in the Blender viewport" width="707">
 </p>
 
-*Magic spell — supplied viewport still. The animation is exported as a GLB; this preview is a single frame.*
+*Blue cylindrical magic beam with a custom magic circle — Blender viewport preview of the animated GLB.*
 
 ### Example geometry budgets
 
