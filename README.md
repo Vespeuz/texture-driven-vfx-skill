@@ -164,6 +164,6 @@ python -m unittest discover -s tests -v
 
 ## License
 
-A repository-wide license has not been specified. Contact the repository owner for permission to reuse or redistribute its contents.
+Released under [The Unlicense](LICENSE). Free for everyone to use, modify, share, and sell, for personal or commercial purposes. No attribution required. Provided as-is, without warranty.
 
-Documentation structure informed by the [Netresearch skill repository README guideline](https://github.com/netresearch/skill-repo-skill/blob/main/skills/skill-repo/references/readme-template.md).
+Third-party materials, if any, remain subject to their respective rights.
