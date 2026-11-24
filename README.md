@@ -1,104 +1,169 @@
-# Texture-Driven VFX Skill v2.0
+# Texture-Driven VFX Skill
 
-[About this project](about.md) · [Agent skill instructions](SKILL.md)
+Create visually rich, lightweight **animated GLB effects** from reference videos, images, original textures, or existing 3D assets. A portable Agent Skill for AI coding agents, technical artists, and real-time game developers.
 
-A reusable, agent-independent VFX production skill that turns visual references into **lightweight, texture-driven, animated GLB** assets. Inspired by the technical construction of low-poly sprite effects, not by copying reference artwork.
+**Input:** A VFX reference or effect brief. **Output:** A self-contained animated glTF 2.0 asset, texture atlases, editable specifications, and validation reports.
 
-The folder contains:
+[Install the skill](#installation) · [Quick start](#quick-start) · [Example prompts](#example-prompts) · [SKILL.md](SKILL.md) · [About](about.md)
 
-- `SKILL.md` — instructions for AI agents and artists
-- `scripts/` — functional portable GLB analysis, original texture generation, animation construction and QA tools
-- `examples/` — rising shockwave, healing pulse and slash arc specification files
-- `output/` — generated example GLBs and procedural atlas (tested)
-- `references/` — measured comparison and practical transparency/portability notes
+## What this skill solves
 
-## Install
+Complex real-time effects often require large geometry budgets, expensive transparent layers, or renderer-specific shaders. This skill combines detailed RGBA textures, carefully shaped low-poly meshes, and native glTF animation to produce portable visual effects with measurable performance budgets.
 
-For an AI coding agent that supports the Agent Skills `SKILL.md` convention, copy the **whole** `texture-driven-vfx-skill` directory into the agent's configured skills directory. Keep scripts and relative file paths together. The `SKILL.md` is plain text and portable; other agents can follow the exact same process by reading the file even if they do not automatically discover skills.
+**Make it look expensive, but render cheaply.**
 
-For manual or CI use, Python 3.10+ and these packages are sufficient:
+## Why this is a skill (model delta)
+
+The skill encodes three types of practical value: retro-born failure patterns, executable scripts and validators, and anti-rationalization guards. Without a dedicated workflow, an agent may reduce flipbook frame count to meet a geometry budget, producing choppy motion while reporting a successful optimization.
+
+The [regression tests](tests/test_v2.py) verify frame cadence, texture processing, layered geometry and draw-group budgets; [legacy tests](tests/test_skill.py) cover the original pipeline. These are deterministic implementation checks; no controlled model-with/without-skill A/B evaluation is published.
+
+## Use when
+
+- Reconstruct a magic spell, explosion, shockwave, slash, healing effect, portal, or other stylized VFX.
+- Build a portable animated GLB from original RGBA textures or authorized reference footage.
+- Create a beam, ribbon, ring, cylinder, cone, or crossed-plane effect with minimal geometry.
+- Preserve fluid animation while reducing triangles, draw submissions, or texture memory.
+- Inspect and optimize an existing GLB for a real-time 3D or web-based project.
+
+## Expected outputs
+
+| Output | Description |
+| --- | --- |
+| Animated GLB | Embedded textures, standard glTF materials, native animation; default clip name `Animation` |
+| RGBA textures | Original sprites, padded atlases, or authorized baked sequences |
+| Editable inputs | JSON effect specifications or flipbook manifests |
+| QA report | Triangle count, texture dimensions, animation timing, estimated draw submissions, and portability notes |
+| Visual review | Reference comparison sheets and target-engine playback checks where available |
+
+## Context requirements
+
+Provide a video, image, GLB, or written effect brief. For accurate recreation, specify the relevant video interval, viewing angles, timing, palette, target runtime, and performance constraints. Supply a matching clean background plate when extracting transparency from footage. Use only reference artwork that you have permission to process and redistribute.
+
+The default atlas budget is 512 × 512 per texture. Preserve source cadence, use visual quality to guide geometry decisions, and aim for fewer than 10 base-pass draw submissions (fewer than 20 when justified).
+
+## Example prompts
+
+- "Use the texture-driven-vfx skill to create a cyan rising shockwave from this video. Ignore the avatar, match the visual timing, and export an animated GLB."
+- "Build a cylindrical magic beam with a separate impact layer and my supplied magic circle. Preserve 30 FPS texture motion, target 1,000–1,500 triangles and fewer than 10 draw submissions."
+- "Create a stylized healing spell with original transparent textures, a rotating ground rune, and floating sparks. Export with 512 × 512 atlases and the animation named Animation."
+- "Inspect this GLB and reduce its texture memory and unnecessary geometry without dropping animation frames. Report the trade-offs and validation results."
+
+## Related skills
+
+None maintained as a formal companion in this repository. The skill can work with independent image-generation and 3D authoring tools. See [the technique guide](references/V2_TECHNIQUES.md) for production references.
+
+## Installation
+
+Clone the repository:
 
 ```bash
+git clone https://github.com/Vespeuz/texture-driven-vfx-skill.git
+cd texture-driven-vfx-skill
 python -m pip install -r requirements.txt
 ```
 
-FFmpeg and FFprobe are optional, for storyboards and authorized video-derived flipbooks.
+Python 3.10+ is required for the bundled scripts. Install FFmpeg and FFprobe for optional video inspection and authorized video-derived flipbook processing.
+
+For an agent that supports Agent Skills, copy the complete repository folder into its configured skills directory, keeping `SKILL.md`, scripts, examples, and references together. Other agents can read [SKILL.md](SKILL.md) directly. The skill is distributed through this repository and uses manual installation rather than a registered marketplace.
+
+## Showcase
+
+<p align="center">
+  <img src="assets/magic-spell-vfx.png" alt="User-supplied viewport still of the blue magic spell and ground circle" width="698">
+</p>
+
+*Magic spell — supplied viewport still. The animation is exported as a GLB; this preview is a single frame.*
+
+### Example geometry budgets
+
+| Example | Triangles | Expected base-pass submissions | Animation |
+| --- | ---: | ---: | --- |
+| Procedural rising shockwave | 24 | 7 before optional batching | TRS |
+| Full-rate cylindrical flipbook (synthetic regression) | 1,024 | 8 after batching | 64 frames at 30 FPS |
+| Cylinder + impact + ground (synthetic regression) | 1,282 | 9 after batching | 64 frames at 30 FPS |
+
+These figures describe structural regression configurations, not measured GPU performance or a guarantee of visual quality. Profile actual draw calls and inspect animation in the destination renderer.
 
 ## Quick start
 
-From the skill root:
+Build an original procedural effect:
 
 ```bash
-# 1. Build a blue rising-shockwave demo with procedural atlas
 python scripts/build_vfx.py --spec examples/rising_shockwave.json \
   --out output/rising_shockwave.glb --atlas-out output/rising_shockwave_atlas.png
 
-# 2. Check the result. --strict treats budget warnings as failures.
 python scripts/validate_glb.py output/rising_shockwave.glb --strict
 
-# 3. Other example styles
 python scripts/build_vfx.py --spec examples/healing_pulse.json --out output/healing_pulse.glb
 python scripts/build_vfx.py --spec examples/slash_arc.json --out output/slash_arc.glb
-
-# 4. Compare existing reference models
-python scripts/analyze_glb.py "../megumin_explosion__vfx_test_1__oxterium.glb" "../vertical beam optimized FIX VISUAL.glb"
-
-# 5. Optional reference-video storyboard (requires FFmpeg)
-python scripts/inspect_video.py ../reference.mp4 --out output/storyboard.jpg --count 12
 ```
 
-### Build with externally generated sprites
-
-Save individually authored transparent images as `beam.png`, `ring.png`, `spark.png`, etc., then:
+Use custom transparent sprites with the same specification:
 
 ```bash
 python scripts/build_vfx.py --spec examples/rising_shockwave.json \
-  --tiles /path/to/generated_tiles \
-  --out output/my_custom_shockwave.glb
+  --tiles /path/to/generated_tiles --out output/my_custom_shockwave.glb
 ```
 
-You may also put `"tiles": ["shield", "lightning", "portal"]` inside the spec `texture` object and provide those uniquely named RGBA PNGs for entirely custom designs. Missing **built-in** tiles use original procedural textures; the user can provide all 12 if desired. Or supply one carefully aligned 4×4 RGBA atlas using `--atlas /path/to/atlas.png`.
+For custom designs, list unique slot names in `texture.tiles` and supply matching RGBA PNG files. A correctly aligned 4×4 atlas can also be supplied with `--atlas`.
 
-## Draw-call optimization
-
-The default generator uses independent TRS-animated meshes for the widest compatibility. Each visible mesh may require its own draw call, even if the effect uses only one texture and one material. For complex reference VFX, **prefer fewer than 10 base-pass draw submissions**, or fewer than 20 when needed for quality.
-
-Use the bundled generic rigid-skin batcher to preserve all source geometry and animation while merging sprites by material (and chronological node order):
+### Full-rate texture animation
 
 ```bash
-python scripts/batch_drawcalls.py output/rising_shockwave.glb \
-  --out output/rising_shockwave_batched.glb --max-draws 9 \
-  --max-joints 16 --report output/rising_shockwave_batched_report.json
-```
-
-The example becomes **one drawable mesh primitive** while retaining its original animation channels, textures, and 24 triangles. Batching adds rigid skin joints, a standard glTF 2.0 feature. **One drawable does not guarantee exactly one real draw call** in an engine with extra render passes. Skinning and transparent sorting must be tested in the final runtime; keep the original skin-free export as a fallback.
-
-## Demo performance and structure
-
-The included **rising shockwave** example has **24 triangles**, **7 meshes**, **1 material**, **1 embedded 512px texture**, **11 TRS animation channels**, **0 joints** and weighs about **135 KiB**. The packaged healing and slash examples are also playable GLB animation assets. These are *structurally validated*, not benchmarked/render-tested in your particular game engine.
-
-## Grounding and limitations
-
-- The provided reference video has multiple elemental rising pillar variants. This example is the blue/cyan interpretation.
-- A GLB is not a Unity VFX Graph or GPU particle system; standard GLB node transforms cover scale/rotation/translation but not scrolling UV animation or animated opacity.
-- `KHR_materials_unlit` is used with a standard PBR fallback and `alphaMode=BLEND`, but exact appearance depends on your renderer. Bloom is an engine-level postprocess, not contained in GLB.
-- Low triangles do **not** guarantee low GPU cost. Crossed transparent planes can cause overdraw, particularly on mobile.
-- User-provided GLB/video reference files are **not bundled**. The skill records their measurements in `references/REFERENCE_ANALYSIS.md`.
-
-## Typical agent instruction
-
-> Use the texture-driven-vfx skill to analyze this reference, decompose it into layers, generate original transparent textures, animate purpose-built low-poly meshes, output a portable self-contained GLB with a JSON spec and validate it. Select an appropriate geometry budget and preserve frame cadence; explain any runtime-specific visual differences.
-
-
-## v2.0: full-rate flipbooks and custom geometry
-
-The original static-sprite workflow is unchanged. New utilities support alpha extraction from a matching background plate, procedural baking, padded atlas packing, STEP-gated GLB flipbooks, low-poly meshes, native morphs, texture resizing and temporal validation. See [V2 techniques](references/V2_TECHNIQUES.md) and [SKILL.md](SKILL.md).
-
-```bash
-python scripts/flipbook.py images rgba_frames --out packed --fps 30
+python scripts/flipbook.py images rgba_frames --out packed --fps 30 --resolution 512
 python scripts/build_flipbook.py packed/manifest.json --shape cylinder --segments 8 --height 48 --out effect.glb --batch
 python scripts/check_flipbook.py effect.glb
 python scripts/validate_glb.py effect.glb --max-tris 1500 --max-texture 512 --max-draws 9
 ```
 
-Default new clip name: `Animation`. Never silently drop frames to meet a geometry target. The flipbook builder handles single sequences and synchronized layered atlases, including an optional ground circle. Independently timed sequences may still need DCC assembly. Rigid-skin playback, visual quality, and actual draw calls must be tested in the destination engine.
+See [V2 techniques and recipes](references/V2_TECHNIQUES.md) for authorized video extraction, offline shader-effect baking, synchronized beam and impact layers, and morph animation.
+
+### Optimize existing effects
+
+```bash
+python scripts/analyze_glb.py output/rising_shockwave.glb
+python scripts/batch_drawcalls.py output/rising_shockwave.glb \
+  --out output/rising_shockwave_batched.glb --max-draws 9 \
+  --max-joints 16 --report output/rising_shockwave_batched_report.json
+```
+
+The optional rigid-skin batcher preserves geometry and transform keyframes while merging compatible sprites. Keep a skin-free compatibility export when the target viewer has unknown skinning support. Morph-target effects require a compatible separate workflow.
+
+## Techniques and tools
+
+| Technique | Tool or guide |
+| --- | --- |
+| Original RGBA sprites and static effects | [atlas.py](scripts/atlas.py), [build_vfx.py](scripts/build_vfx.py) |
+| Flipbooks, alpha extraction, baked motion | [flipbook.py](scripts/flipbook.py) |
+| Shader-independent flipbook export | [build_flipbook.py](scripts/build_flipbook.py) |
+| Custom meshes and UVs | [mesh_shapes.py](scripts/mesh_shapes.py) |
+| Native transforms and morphs | [build_vfx.py](scripts/build_vfx.py) |
+| Rigid-skin draw batching | [batch_drawcalls.py](scripts/batch_drawcalls.py) |
+| Texture resizing | [optimize_textures.py](scripts/optimize_textures.py) |
+| Video inspection | [inspect_video.py](scripts/inspect_video.py) |
+| Structural, temporal and reference QA | [validate_glb.py](scripts/validate_glb.py), [check_flipbook.py](scripts/check_flipbook.py), [compare_frames.py](scripts/compare_frames.py) |
+
+## Compatibility and limitations
+
+Portable GLBs use embedded textures, standard materials and native glTF animation. UV scrolling, shader distortion, material animation, camera-facing billboards, and bloom require runtime support or an offline approximation. Unlit materials use `KHR_materials_unlit` with a standard PBR fallback.
+
+Video-derived flipbooks preserve a reference camera's appearance; a single viewpoint cannot establish exact volumetric geometry. Visual fidelity, transparency sorting, skinning and actual draw calls need verification in the destination engine. Low triangle counts alone do not establish GPU performance: texture memory and transparent overdraw also matter.
+
+Original or authorized reference assets are supplied locally. Generated GLBs and atlases can be reproduced using the scripts; see [output instructions](output/README.md).
+
+## Contributing
+
+Open an [issue](https://github.com/Vespeuz/texture-driven-vfx-skill/issues) or submit a pull request with a reproducible example. Preserve existing workflows, add regression coverage for new behavior, and report actual visual and structural test results separately. Avoid committing private or unauthorized reference footage.
+
+Run the automated tests from the repository root:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+## License
+
+A repository-wide license has not been specified. Contact the repository owner for permission to reuse or redistribute its contents.
+
+Documentation structure informed by the [Netresearch skill repository README guideline](https://github.com/netresearch/skill-repo-skill/blob/main/skills/skill-repo/references/readme-template.md).
